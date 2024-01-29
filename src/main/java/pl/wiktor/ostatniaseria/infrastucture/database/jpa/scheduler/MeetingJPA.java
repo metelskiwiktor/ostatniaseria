@@ -14,7 +14,7 @@ public class MeetingJPA {
     private String meetingId;
     private String email;
     private Instant start;
-    private Instant end;
+    private Instant finish;
 
     public String getId() {
         return id;
@@ -48,11 +48,11 @@ public class MeetingJPA {
         this.start = start;
     }
 
-    public Instant getEnd() {
-        return end;
+    public Instant getFinish() {
+        return finish;
     }
 
-    public void setEnd(Instant end) {
-        this.end = end;
+    public void setFinish(Instant end) {
+        this.finish = end;
     }
 }

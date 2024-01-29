@@ -4,12 +4,9 @@ import org.springframework.core.convert.converter.Converter;
 import pl.wiktor.ostatniaseria.domain.user.model.register.User;
 import pl.wiktor.ostatniaseria.infrastucture.database.jpa.user.UserJPA;
 
-public class CreateUserToUserJPA implements Converter<User, UserJPA> {
+public class UserJPAToUser implements Converter<UserJPA, User> {
     @Override
-    public UserJPA convert(User source) {
-        UserJPA userJPA = new UserJPA();
-        userJPA.setPassword(source.password());
-        userJPA.setEmail(source.email());
-        return userJPA;
+    public User convert(UserJPA source) {
+        return new User(source.getEmail(), source.getPassword());
     }
 }

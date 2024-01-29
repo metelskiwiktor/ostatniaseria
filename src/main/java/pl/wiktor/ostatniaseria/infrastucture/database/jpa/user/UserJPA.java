@@ -1,5 +1,6 @@
 package pl.wiktor.ostatniaseria.infrastucture.database.jpa.user;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import org.hibernate.annotations.UuidGenerator;
@@ -10,6 +11,7 @@ public class UserJPA {
     @UuidGenerator
     private String id;
     private String password;
+    @Column(unique=true)
     private String email;
 
     public void setId(String id) {

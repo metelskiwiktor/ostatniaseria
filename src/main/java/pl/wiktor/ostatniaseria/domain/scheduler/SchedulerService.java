@@ -1,5 +1,7 @@
 package pl.wiktor.ostatniaseria.domain.scheduler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.wiktor.ostatniaseria.domain.scheduler.model.Meeting;
 
 import java.time.*;
@@ -8,38 +10,53 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SchedulerService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerService.class);
     private final SchedulerRepository schedulerRepository;
     private final Clock clock;
     private final LocalTime businessStartHour;
     private final LocalTime businessEndHour;
+    private final CalendarNotification calendarNotification;
 
-    public SchedulerService(SchedulerRepository schedulerRepository, Clock clock, LocalTime businessStartHour, LocalTime businessEndHour) {
+    public SchedulerService(SchedulerRepository schedulerRepository, Clock clock, LocalTime businessStartHour,
+                            LocalTime businessEndHour, CalendarNotification calendarNotification) {
         this.schedulerRepository = schedulerRepository;
         this.clock = clock;
         this.businessStartHour = businessStartHour;
         this.businessEndHour = businessEndHour;
+        this.calendarNotification = calendarNotification;
     }
 
-    public List<LocalDateTime> getAvailableMeetingsTime() {
+    public List<ZonedDateTime> getAvailableMeetingsTime() {
         LocalDate today = LocalDate.now(clock);
         LocalDate endOfNextMonth = getEndOfNextMonth(today);
-        Set<LocalDateTime> takenMeetings = new HashSet<>(schedulerRepository.getTakenMeetingsBetween(today, endOfNextMonth));
+        List<LocalDateTime> takenMeetings = schedulerRepository.getTakenMeetingsBetween(today.atStartOfDay(clock.getZone()).toInstant(),
+                endOfNextMonth.atStartOfDay(clock.getZone()).toInstant());
+        LOGGER.info("Taken meetings: {}", takenMeetings);
+        // null check
+        if (takenMeetings == null) {
+            takenMeetings = new ArrayList<>();
+        }
+
+        Set<LocalDateTime> takenMeetingsSet = new HashSet<>(takenMeetings);
         List<LocalDateTime> allMeetings = new ArrayList<>();
         LocalDateTime start = today.atTime(businessStartHour);
+
         while (!start.isAfter(endOfNextMonth.atStartOfDay())) {
+            start = start.plusMinutes(45);
             if (isWorkingDay(start.toLocalDate()) &&
-                    start.toLocalTime().isBefore(businessEndHour) &&
-                    start.toLocalTime().isAfter(businessStartHour) ||
-                    start.toLocalTime().equals(businessStartHour)) {
+                    !start.toLocalTime().isBefore(businessStartHour) &&
+                    !start.toLocalTime().isAfter(businessEndHour)) {
                 allMeetings.add(start);
             }
-            start = start.plusMinutes(45);
+
             if (start.toLocalTime().isAfter(businessEndHour)) {
                 start = start.toLocalDate().plusDays(1).atStartOfDay().plusHours(businessStartHour.getHour());
             }
         }
+
         return allMeetings.stream()
-                .filter(meeting -> !takenMeetings.contains(meeting))
+                .filter(meeting -> !takenMeetingsSet.contains(meeting))
+                .map(localDateTime -> ZonedDateTime.of(localDateTime, clock.getZone()))
                 .collect(Collectors.toList());
     }
 
@@ -50,18 +67,19 @@ public class SchedulerService {
 
     public Meeting bookMeeting(ZonedDateTime start, String email) {
         ZonedDateTime end = start.plusMinutes(45);
-        checkWithinBusinessHours(start, end);
+        checkWithinBusinessHours(start);
         checkMeetingStartTime(start);
         Meeting meeting = new Meeting(UUID.randomUUID().toString(), email, start, end);
         schedulerRepository.save(meeting);
+        LOGGER.info("Meeting booked: {}", meeting);
+        calendarNotification.schedule(start, end, "Meeting with " + email, "Meeting description");
         return meeting;
     }
 
-    private void checkWithinBusinessHours(ZonedDateTime start, ZonedDateTime end) {
-        int startOfDayInMinutes = toMinutes(start);
-        int endOfDayInMinutes = toMinutes(end);
+    private void checkWithinBusinessHours(ZonedDateTime start) {
+        int startOfDayInMinutes = start.getHour() * 60 + start.getMinute();
 
-        if (!isWithinBusinessHours(startOfDayInMinutes) || !isWithinBusinessHours(endOfDayInMinutes)) {
+        if (isNotWithinBusinessHours(startOfDayInMinutes)) {
             throw new IllegalArgumentException(
                     "The meeting should be booked within business hours ("
                             + businessStartHour.getHour() + " - "
@@ -69,15 +87,11 @@ public class SchedulerService {
         }
     }
 
-    private int toMinutes(ZonedDateTime time) {
-        return time.getHour() * 60 + time.getMinute();
-    }
-
-    private boolean isWithinBusinessHours(int timeInMinutes) {
+    private boolean isNotWithinBusinessHours(int timeInMinutes) {
         int startDayInMinutes = businessStartHour.getHour() * 60 + businessStartHour.getMinute();
         int endDayInMinutes = businessEndHour.getHour() * 60 + businessEndHour.getMinute();
 
-        return timeInMinutes >= startDayInMinutes && timeInMinutes <= endDayInMinutes;
+        return timeInMinutes < startDayInMinutes || timeInMinutes > endDayInMinutes;
     }
 
     private void checkMeetingStartTime(ZonedDateTime start) {

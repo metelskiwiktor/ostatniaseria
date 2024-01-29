@@ -4,7 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.wiktor.ostatniaseria.domain.exception.DomainException;
 import pl.wiktor.ostatniaseria.domain.exception.ErrorCode;
+import pl.wiktor.ostatniaseria.domain.lib.PasswordHash;
 import pl.wiktor.ostatniaseria.domain.user.UserService;
+import pl.wiktor.ostatniaseria.domain.user.model.register.User;
 
 import java.time.Clock;
 import java.time.temporal.ChronoUnit;
@@ -24,7 +26,7 @@ public class TokenService {
     }
 
     public String login(String email, String password) {
-        Validator.checkUserExists(email, () -> userService.verifyPasswordOrUserExists(email, password));
+        Validator.checkUserExists(email, () -> userService.verifyPasswordOrUserExists(email, PasswordHash.hashPassword(password)));
         Token token = new Token(email, UUID.randomUUID().toString(), clock.instant().plus(5, ChronoUnit.DAYS));
         tokenRepository.saveOrRefreshToken(token);
         LOGGER.info("User with email {} has been logged in", email);
@@ -35,6 +37,13 @@ public class TokenService {
         return tokenRepository.getToken(token)
                 .map(value -> value.expirationDate().isAfter(clock.instant()))
                 .orElse(false);
+    }
+
+    public User getUser(String token) {
+        return tokenRepository.getToken(token)
+                .map(Token::email)
+                .map(userService::getUserByEmail)
+                .orElseThrow(() -> new DomainException(ErrorCode.INVALID_TOKEN, token));
     }
 
     static class Validator {

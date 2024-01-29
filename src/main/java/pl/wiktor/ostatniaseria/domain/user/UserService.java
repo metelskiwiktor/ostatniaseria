@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.wiktor.ostatniaseria.domain.exception.DomainException;
 import pl.wiktor.ostatniaseria.domain.exception.ErrorCode;
+import pl.wiktor.ostatniaseria.domain.lib.PasswordHash;
 import pl.wiktor.ostatniaseria.domain.user.model.register.User;
 
 import java.util.function.Supplier;
@@ -23,12 +24,16 @@ public class UserService {
         Validator.verifyEmailAlreadyRegistered(email, () -> userRepository.isEmailInUse(email));
         Validator.verifyEmailSyntax(email);
         Validator.verifyStrongPassword(password);
-        userRepository.createUser(new User(email, password));
+        userRepository.createUser(new User(email, PasswordHash.hashPassword(password)));
         LOGGER.info("User {} has been created", email);
     }
 
     public boolean verifyPasswordOrUserExists(String email, String password) {
-        return userRepository.isPasswordOrUserExists(email, password);
+        return userRepository.isPasswordOrUserExists(email, PasswordHash.hashPassword(password));
+    }
+
+    public User getUserByEmail(String email) {
+        return userRepository.getUserByEmail(email);
     }
 
     static class Validator {

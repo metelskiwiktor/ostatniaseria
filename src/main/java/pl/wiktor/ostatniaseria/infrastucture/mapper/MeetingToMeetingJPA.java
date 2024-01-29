@@ -9,9 +9,9 @@ public class MeetingToMeetingJPA implements Converter<Meeting, MeetingJPA> {
     public MeetingJPA convert(Meeting source) {
         MeetingJPA meetingJPA = new MeetingJPA();
         meetingJPA.setMeetingId(source.meetingId());
-        meetingJPA.setEmail(meetingJPA.getEmail());
-        meetingJPA.setStart(meetingJPA.getStart());
-        meetingJPA.setEnd(meetingJPA.getEnd());
+        meetingJPA.setEmail(source.email());
+        meetingJPA.setStart(source.start().toInstant());
+        meetingJPA.setFinish(source.finish().toInstant());
         return meetingJPA;
     }
 }

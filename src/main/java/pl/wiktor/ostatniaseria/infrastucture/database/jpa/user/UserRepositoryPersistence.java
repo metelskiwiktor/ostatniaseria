@@ -21,11 +21,6 @@ public class UserRepositoryPersistence implements UserRepository {
     }
 
     @Override
-    public String login(String email, String password) {
-        return null;
-    }
-
-    @Override
     public boolean isPasswordOrUserExists(String email, String password) {
         return database.existsByEmailAndPassword(email, password);
     }
@@ -33,5 +28,10 @@ public class UserRepositoryPersistence implements UserRepository {
     @Override
     public boolean isEmailInUse(String email) {
         return database.existsByEmail(email);
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return conversionService.convert(database.getByEmail(email), User.class);
     }
 }

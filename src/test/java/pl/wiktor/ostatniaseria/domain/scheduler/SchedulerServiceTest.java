@@ -29,15 +29,17 @@ class SchedulerServiceTest {
         clock = Clock.systemDefaultZone();
         businessStart = LocalTime.of(9, 0);
         businessEnd = LocalTime.of(18, 0);
-        service = new SchedulerService(repository, clock, businessStart, businessEnd);
+        CalendarNotification calendarNotification = (startDate, endDate, title, description) -> {
+        };
+        service = new SchedulerService(repository, clock, businessStart, businessEnd, calendarNotification);
     }
 
     @Test
     void getAvailableMeetingsTimeShouldReturnAvailableTimes() {
         List<LocalDateTime> meetings = new ArrayList<>();
-        when(repository.getTakenMeetingsBetween(any(LocalDate.class), any(LocalDate.class))).thenReturn(meetings);
+        when(repository.getTakenMeetingsBetween(any(Instant.class), any(Instant.class))).thenReturn(meetings);
 
-        List<LocalDateTime> availableTimes = service.getAvailableMeetingsTime();
+        List<ZonedDateTime> availableTimes = service.getAvailableMeetingsTime();
 
         assertNotNull(availableTimes);
         assertNotEquals(0, availableTimes.size());
@@ -52,9 +54,15 @@ class SchedulerServiceTest {
     }
 
     @Test
-    void bookMeetingShouldFailOutsideBusinessHours() {
+    void bookMeetingShouldFailBeforeBusinessHours() {
         ZonedDateTime start = ZonedDateTime.of(LocalDate.now(), LocalTime.of(8, 0), ZoneId.systemDefault());
         assertThrows(IllegalArgumentException.class, () -> service.bookMeeting(start, "test@test.com"));
+    }
+
+    @Test
+    void bookMeetingShouldNotFailAfterBusinessHours() {
+        ZonedDateTime start = ZonedDateTime.of(LocalDate.now(), LocalTime.of(17, 45), ZoneId.systemDefault());
+        assertDoesNotThrow(() -> service.bookMeeting(start, "test@test.com"));
     }
 
     @Test
