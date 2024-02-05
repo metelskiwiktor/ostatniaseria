@@ -7,7 +7,9 @@ public enum ErrorCode {
     EMAIL_ALREADY_REGISTERED("Email '%s' is already registered", HttpStatus.BAD_REQUEST),
     EMAIL_SYNTAX_ERROR("Email '%s' is incorrect", HttpStatus.BAD_REQUEST),
     WEAK_PASSWORD("Provided password is weak", HttpStatus.BAD_REQUEST),
-    INVALID_TOKEN("Invalid token '%s'", HttpStatus.INTERNAL_SERVER_ERROR);
+    INVALID_TOKEN("Invalid token '%s'", HttpStatus.INTERNAL_SERVER_ERROR),
+    USERNAME_ALREADY_REGISTERED("Username '%s' is already in use", HttpStatus.BAD_REQUEST),
+    USERNAME_SYNTAX_ERROR("Username '%s' should have at least 4 characters", HttpStatus.BAD_REQUEST);
     private final String message;
     private final HttpStatus status;
 

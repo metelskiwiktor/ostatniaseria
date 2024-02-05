@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import static io.restassured.RestAssured.given;
@@ -14,24 +15,21 @@ public class UserRegisterTest {
     @BeforeEach
     public void cleanup() {
         try {
-            // Set the PostgreSQL Driver
-            Class.forName("org.postgresql.Driver");
-
-            // Set PostgreSQL database details
             try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/ostatniaseria", "postgres", "wiktor");
                  Statement stmt = conn.createStatement()) {
-
-                // Truncate PostgreSQL Table
-                stmt.executeUpdate("TRUNCATE TABLE USERJPA RESTART IDENTITY");
+                stmt.executeUpdate("TRUNCATE TABLE training_reportjpa_photos, USERJPA, training_reportjpa CASCADE");
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
+
+
     @Test
     public void shouldNotAllowDuplicateEmails() {
         String requestBody = "{"
+                + "\"username\":\"test_username\","
                 + "\"password\":\"test_password1!\","
                 + "\"email\":\"duplicateEmail@test.com\""
                 + "}";
@@ -58,6 +56,7 @@ public class UserRegisterTest {
     @Test
     public void shouldRequireStrongPassword() {
         String weakPasswordRequest = "{"
+                + "\"username\":\"test_username\","
                 + "\"password\":\"weak\","
                 + "\"email\":\"strongPassword@test.com\""
                 + "}";
@@ -75,6 +74,7 @@ public class UserRegisterTest {
     @Test
     public void shouldRequireCorrectEmailSyntax() {
         String incorrectSyntaxEmail = "{"
+                + "\"username\":\"test_username\","
                 + "\"password\":\"validPassword1!\","
                 + "\"email\":\"incorrectSyntaxEmail\""
                 + "}";

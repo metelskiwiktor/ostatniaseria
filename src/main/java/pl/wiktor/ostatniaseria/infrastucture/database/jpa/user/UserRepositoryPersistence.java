@@ -2,7 +2,7 @@ package pl.wiktor.ostatniaseria.infrastucture.database.jpa.user;
 
 import org.springframework.core.convert.ConversionService;
 import pl.wiktor.ostatniaseria.domain.user.UserRepository;
-import pl.wiktor.ostatniaseria.domain.user.model.register.User;
+import pl.wiktor.ostatniaseria.domain.user.model.User;
 
 import java.util.Objects;
 
@@ -33,5 +33,10 @@ public class UserRepositoryPersistence implements UserRepository {
     @Override
     public User getUserByEmail(String email) {
         return conversionService.convert(database.getByEmail(email), User.class);
+    }
+
+    @Override
+    public boolean isUsernameInUse(String username) {
+        return database.existsByUsername(username);
     }
 }

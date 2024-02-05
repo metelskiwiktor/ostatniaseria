@@ -6,7 +6,7 @@ import pl.wiktor.ostatniaseria.domain.exception.DomainException;
 import pl.wiktor.ostatniaseria.domain.exception.ErrorCode;
 import pl.wiktor.ostatniaseria.domain.lib.PasswordHash;
 import pl.wiktor.ostatniaseria.domain.user.UserService;
-import pl.wiktor.ostatniaseria.domain.user.model.register.User;
+import pl.wiktor.ostatniaseria.domain.user.model.User;
 
 import java.time.Clock;
 import java.time.temporal.ChronoUnit;

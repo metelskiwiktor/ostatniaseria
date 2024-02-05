@@ -2,7 +2,7 @@ package pl.wiktor.ostatniaseria.domain.report;
 
 import org.springframework.web.multipart.MultipartFile;
 import pl.wiktor.ostatniaseria.domain.report.model.TrainingReport;
-import pl.wiktor.ostatniaseria.domain.user.model.register.User;
+import pl.wiktor.ostatniaseria.domain.user.model.User;
 
 import java.io.IOException;
 import java.util.ArrayList;

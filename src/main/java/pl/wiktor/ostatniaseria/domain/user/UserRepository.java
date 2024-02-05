@@ -1,6 +1,6 @@
 package pl.wiktor.ostatniaseria.domain.user;
 
-import pl.wiktor.ostatniaseria.domain.user.model.register.User;
+import pl.wiktor.ostatniaseria.domain.user.model.User;
 
 public interface UserRepository {
     void createUser(User user);
@@ -10,4 +10,6 @@ public interface UserRepository {
     boolean isEmailInUse(String email);
 
     User getUserByEmail(String email);
+
+    boolean isUsernameInUse(String username);
 }

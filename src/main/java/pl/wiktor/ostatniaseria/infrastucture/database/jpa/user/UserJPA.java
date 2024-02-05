@@ -10,6 +10,8 @@ public class UserJPA {
     @Id
     @UuidGenerator
     private String id;
+    @Column(unique=true)
+    private String username;
     private String password;
     @Column(unique=true)
     private String email;
@@ -20,6 +22,14 @@ public class UserJPA {
 
     public String getId() {
         return id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {

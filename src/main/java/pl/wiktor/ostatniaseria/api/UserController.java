@@ -20,19 +20,18 @@ import java.time.Clock;
 public class UserController {
     private final UserService userService;
     private final TokenService tokenService;
-    private final Clock clock;
     private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
-    public UserController(UserService userService, TokenService tokenService, Clock clock) {
+    public UserController(UserService userService, TokenService tokenService) {
         this.userService = userService;
         this.tokenService = tokenService;
-        this.clock = clock;
     }
 
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody RegisterUserRequest createUserRequest) {
         LOGGER.info("Creating user with email: {}", createUserRequest.email);
         userService.createUser(
+                createUserRequest.username,
                 createUserRequest.email,
                 createUserRequest.password
         );
@@ -45,11 +44,5 @@ public class UserController {
                 loginUserRequest.email,
                 loginUserRequest.password
         );
-    }
-
-    //    @RequiresLogin
-    @GetMapping
-    public String getCurrentTime() {
-        return clock.instant().toString();
     }
 }

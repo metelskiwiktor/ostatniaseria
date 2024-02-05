@@ -20,8 +20,8 @@ public class RestExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), ex.getErrorCode().getStatus());
     }
 
-    @ExceptionHandler(value = {RuntimeException.class})
-    protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
+    @ExceptionHandler(value = {Exception.class})
+    protected ResponseEntity<Object> handleConflict(Exception ex, WebRequest request) {
         LOGGER.error(ex.getMessage(), ex);
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }

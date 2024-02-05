@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.wiktor.ostatniaseria.api.security.RequiresLogin;
 import pl.wiktor.ostatniaseria.domain.report.TrainingReportService;
-import pl.wiktor.ostatniaseria.domain.user.model.register.User;
+import pl.wiktor.ostatniaseria.domain.user.model.User;
 
 import java.io.IOException;
 import java.util.List;
