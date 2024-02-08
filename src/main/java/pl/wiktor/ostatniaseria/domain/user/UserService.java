@@ -2,6 +2,8 @@ package pl.wiktor.ostatniaseria.domain.user;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.wiktor.ostatniaseria.domain.administration.PersonalTrainer;
+import pl.wiktor.ostatniaseria.domain.administration.PersonalTrainerService;
 import pl.wiktor.ostatniaseria.domain.exception.DomainException;
 import pl.wiktor.ostatniaseria.domain.exception.ErrorCode;
 import pl.wiktor.ostatniaseria.domain.lib.PasswordHash;
@@ -13,12 +15,14 @@ import java.util.regex.Pattern;
 public class UserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
+    private final PersonalTrainerService personalTrainerService;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[0-9]+)(?=.*[a-zA-Z]{5,})(?=.*[!@#$%^&*()_+=]+).*$");
     private static final Pattern USERNAME_PATTERN = Pattern.compile("^.{4,}$");
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PersonalTrainerService personalTrainerService) {
         this.userRepository = userRepository;
+        this.personalTrainerService = personalTrainerService;
     }
 
     public void createUser(String username, String email, String password) {
@@ -27,7 +31,8 @@ public class UserService {
         Validator.verifyEmailAlreadyRegistered(email, () -> userRepository.isEmailInUse(email));
         Validator.verifyUsernameAlreadyRegistered(username, () -> userRepository.isUsernameInUse(username));
         Validator.verifyStrongPassword(password);
-        userRepository.createUser(new User(username, email, PasswordHash.hashPassword(password)));
+        PersonalTrainer personalTrainer = personalTrainerService.findPersonalTrainerWithLeastUsers();
+        userRepository.createUser(new User(username, email, PasswordHash.hashPassword(password), personalTrainer));
         LOGGER.info("User {} has been created", email);
     }
 
